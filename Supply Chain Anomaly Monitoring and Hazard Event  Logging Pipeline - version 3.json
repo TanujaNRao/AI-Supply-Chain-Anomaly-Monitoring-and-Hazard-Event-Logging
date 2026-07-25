@@ -1,0 +1,890 @@
+{
+  "name": "Supply Chain Anomaly Monitoring and Hazard Event  Logging Pipeline - version 3",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1616,
+        -16
+      ],
+      "id": "ef5e7b4a-90e0-429e-b26a-9f094524af0f",
+      "name": "Nexus Ops Worflow Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const d = item.json;\n\n  return {\n    json: {\n      shipment_key: d.shipment_key,\n      log_id: d.log_id,\n      facility_id: d.facility_id,\n      hazard_type: d.hazard_type,\n      severity_level: d.severity_level,\n      hazard_score: Number(d.hazard_score),\n      priority_band: d.priority_band,\n      ghs_class: d.ghs_hazard_class_involved,\n      description: d.description,\n      recommendation: d.recommendation,\n      status: d.status,\n      timestamp: d.timestamp\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1168,
+        -112
+      ],
+      "id": "1560fc24-d5fc-4e15-a97c-cb1fd3f5d7f4",
+      "name": "Incident Data Normalizer"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1gGdnsXQfz7fPcsqmyzkOjf01J_zcVFN5BWvC6zm4WLs",
+          "mode": "list",
+          "cachedResultName": "Hazard_20_Refined (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gGdnsXQfz7fPcsqmyzkOjf01J_zcVFN5BWvC6zm4WLs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 932317400,
+          "mode": "list",
+          "cachedResultName": "Hazard_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gGdnsXQfz7fPcsqmyzkOjf01J_zcVFN5BWvC6zm4WLs/edit#gid=932317400"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1392,
+        -112
+      ],
+      "id": "66c8019e-f3bf-43b1-943b-c2ff3f51cd31",
+      "name": "Incident Data Repository",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Tqg6eqK2OltQCTJN",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1dU8ufU2cNhwYccuVz37MQ4Dyo4Z9_L7MhvR0Q8QLXVU",
+          "mode": "list",
+          "cachedResultName": "Shipment_20_Refined (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dU8ufU2cNhwYccuVz37MQ4Dyo4Z9_L7MhvR0Q8QLXVU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1765806814,
+          "mode": "list",
+          "cachedResultName": "Shipment_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dU8ufU2cNhwYccuVz37MQ4Dyo4Z9_L7MhvR0Q8QLXVU/edit#gid=1765806814"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1392,
+        80
+      ],
+      "id": "4d8a9e99-35a4-4f9d-841a-082ed97f6e12",
+      "name": "Shipment Data Repository",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Tqg6eqK2OltQCTJN",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nreturn $input.all().map(item => {\n  const d = item.json;\n  const rawBand = d['stock_risk_band'];\n  const stock_band = rawBand === 'Very Critical' ? 'Critical' : rawBand;\n  return {\n    json: {\n      shipment_key: d['shipment_key'] || d['Shipment ID'],\n      stock_score: Number(d['shipment_score']) || 0,\n      stock_band,\n      stock_recommendation: d['recommendation'] || null,\n      carrier: d['carrier'],\n      origin: d['origin'],\n      destination_facility: d['destination_facility'],\n      delay_days: d['delay_days'],\n      goods_condition: d['goods_condition'],\n      temperature_excursion: d['temperature_excursion'],\n      inventory_risk: d['inventory_risk'],\n      shipment_status: d['status']\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1168,
+        80
+      ],
+      "id": "8e30d07a-1be8-46f1-bfad-82f3578d8ca7",
+      "name": "Shipment Data Normalizer"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "shipment_key",
+        "joinMode": "keepEverything",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -944,
+        -16
+      ],
+      "id": "d810e1dd-6f07-496c-94b4-aef99642a154",
+      "name": "Unified Operations Data Engine"
+    },
+    {
+      "parameters": {
+        "maxItems": 10
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        -16
+      ],
+      "id": "6ecfd285-50d4-436c-a5c8-69dd717a36ee",
+      "name": " Dashboard Data Optimizer"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI Incident Investigation Assistant for a Chemical Supply Chain Safety Monitoring System.\n\nYour task is to analyze BOTH the shipment information and the chemical hazard information together.\n\nDo NOT write about shipment delays alone.\nDo NOT write about hazards alone.\n\nAlways combine both into ONE operational incident.\n\nInput\n\nShipment ID: {{ $json.shipment_key }}\nFacility: {{ $json.facility_id }}\nShipment Status: {{ $json.shipment_status }}\nDelay Days: {{ $json.delay_days }}\nStock Score: {{ $json.stock_score }}\n\nHazard Type: {{ $json.hazard_type }}\nSeverity: {{ $json.severity_level }}\nHazard Score: {{ $json.hazard_score }}\n\nDescription:\n{{ $json.description }}\n\nReturn ONLY this format.\n\nEvent Category:\nCombine BOTH issues into one title.\nExamples:\nGas Leak + Inventory Risk\nContainer Breach + Supply Chain Delay\nEquipment Failure + Shipment Delay\nNear Miss + Inventory Risk\nChemical Spill + Logistics Disruption\n\nIncident Summary:\nWrite ONE paragraph explaining\n\n• what happened\n• how the logistics issue affected operations\n• how the safety hazard increased business risk\n• the overall operational impact\n\nDo NOT mention AI.\nDo NOT use markdown.\nDo NOT use bullets here.\n\nRecommended Actions:\n\nProvide exactly 3 action points.\n\nOne action for Safety.\n\nOne action for Logistics.\n\nOne action for Operations/Management.\n\nKeep each action one sentence.\n\nReturn nothing except:\n\nEvent Category:\n\nIncident Summary:\n\nRecommended Actions:",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -496,
+        -16
+      ],
+      "id": "8f2cd1ab-4b92-4e67-9d6b-c949148fa4bf",
+      "name": "Nexus AI Risk Intelligence Engine"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        208
+      ],
+      "id": "2bb69623-54a6-4ed1-98cb-d7d69ec7d514",
+      "name": " LLM Processing Engine (Groq)",
+      "credentials": {
+        "groqApi": {
+          "id": "eU7rXCDRvibuvxGy",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function band(score) {\n  if (score <= 45) return \"Low\";\n  if (score <= 62) return \"Medium\";\n  if (score <= 74) return \"High\";\n  return \"Critical\";\n}\n\nconst aiItems = $input.all();\nconst sourceItems = $('Unified Operations Data Engine').all();\n\nreturn aiItems.map((item, i) => {\n\n  const d = sourceItems[i]?.json || {};\n\n  const text = item.json.output || \"\";\n\n  // Extract Event Category\n  const eventCategory =\n    (text.match(/Event Category:\\s*([\\s\\S]*?)Incident Summary:/i)?.[1] || \"Unclassified\").trim();\n\n  // Extract Incident Summary\n  const incidentSummary =\n    (text.match(/Incident Summary:\\s*([\\s\\S]*?)Recommended Actions:/i)?.[1] || \"\").trim();\n\n  // Extract Recommendations\n  const recommendation =\n    (text.match(/Recommended Actions:\\s*([\\s\\S]*)/i)?.[1] || \"\").trim();\n\n  const hazard_score = Number(d.hazard_score) || 0;\n  const stock_score = Number(d.stock_score) || 0;\n\n  const combined_score = Math.max(hazard_score, stock_score);\n\n  return {\n\n    json: {\n\n      event_id:\n        \"EVT-\" +\n        Math.random().toString(36).substring(2, 8).toUpperCase(),\n\n      shipment_id: d.shipment_key,\n\n      log_id: d.log_id,\n\n      facility_id: d.facility_id,\n\n      hazard_type: d.hazard_type,\n\n      shipment_status: d.shipment_status,\n\n      severity_level: d.severity_level,\n\n      hazard_score,\n\n      stock_score,\n\n      combined_score,\n\n      business_priority: band(combined_score),\n\n      event_category: eventCategory,\n\n      incident_summary: incidentSummary,\n\n      recommendation: recommendation,\n\n      assigned_team:\n        (hazard_score > 0 && stock_score > 0)\n          ? \"Safety + Logistics (Joint Response)\"\n          : hazard_score > 0\n            ? \"Safety Team\"\n            : \"Logistics Team\",\n\n      notification_status: \"Pending\",\n\n      event_status: \"Open\",\n\n      processed_timestamp: new Date().toISOString()\n\n    }\n\n  };\n\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -16
+      ],
+      "id": "23a6b711-2178-47d8-a00e-0cf019509dfa",
+      "name": "Dashboard Metrics Generator"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "41f6eba8-741f-4336-93d4-4b54df6e6058",
+              "leftValue": "={{$json.business_priority}}",
+              "rightValue": "High",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "498bc473-e96f-4820-91fd-8325951a58f4",
+              "leftValue": "={{$json.business_priority}}",
+              "rightValue": "Critical",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        -16
+      ],
+      "id": "c59b5f19-84c0-4b25-a51f-88b7739c0354",
+      "name": "⚠️ Risk Assessment & Escalation Gateway"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1gGdnsXQfz7fPcsqmyzkOjf01J_zcVFN5BWvC6zm4WLs",
+          "mode": "list",
+          "cachedResultName": "Hazard_20_Refined (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gGdnsXQfz7fPcsqmyzkOjf01J_zcVFN5BWvC6zm4WLs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1592426963,
+          "mode": "list",
+          "cachedResultName": "Master_Event_Repository",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gGdnsXQfz7fPcsqmyzkOjf01J_zcVFN5BWvC6zm4WLs/edit#gid=1592426963"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "shipment_id",
+              "displayName": "shipment_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "log_id",
+              "displayName": "log_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facility_id",
+              "displayName": "facility_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hazard_score",
+              "displayName": "hazard_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stock_score",
+              "displayName": "stock_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overlap_bonus_applied",
+              "displayName": "overlap_bonus_applied",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "combined_score",
+              "displayName": "combined_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "business_priority",
+              "displayName": "business_priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "root_cause",
+              "displayName": "root_cause",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "assigned_team",
+              "displayName": "assigned_team",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notification_status",
+              "displayName": "notification_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processed_timestamp",
+              "displayName": "processed_timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hazard_type",
+              "displayName": "hazard_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "shipment_status",
+              "displayName": "shipment_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "severity_level",
+              "displayName": "severity_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "incident_summary",
+              "displayName": "incident_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        288,
+        -112
+      ],
+      "id": "e5819e60-bb42-4924-b628-18297c8eb2b4",
+      "name": "Critical Incident Logger",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Tqg6eqK2OltQCTJN",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1gGdnsXQfz7fPcsqmyzkOjf01J_zcVFN5BWvC6zm4WLs",
+          "mode": "list",
+          "cachedResultName": "Hazard_20_Refined (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gGdnsXQfz7fPcsqmyzkOjf01J_zcVFN5BWvC6zm4WLs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1592426963,
+          "mode": "list",
+          "cachedResultName": "Master_Event_Repository",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gGdnsXQfz7fPcsqmyzkOjf01J_zcVFN5BWvC6zm4WLs/edit#gid=1592426963"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "shipment_id",
+              "displayName": "shipment_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "log_id",
+              "displayName": "log_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "facility_id",
+              "displayName": "facility_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hazard_score",
+              "displayName": "hazard_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stock_score",
+              "displayName": "stock_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overlap_bonus_applied",
+              "displayName": "overlap_bonus_applied",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "combined_score",
+              "displayName": "combined_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "combined_band",
+              "displayName": "combined_band",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_category",
+              "displayName": "event_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "root_cause",
+              "displayName": "root_cause",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "assigned_team",
+              "displayName": "assigned_team",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notification_status",
+              "displayName": "notification_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_status",
+              "displayName": "event_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processed_timestamp",
+              "displayName": "processed_timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stock_recommendation",
+              "displayName": "stock_recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        288,
+        80
+      ],
+      "id": "39dfc8f2-5bbd-4d65-8f29-443aa4dea8b4",
+      "name": "Standard Incident Logger",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Tqg6eqK2OltQCTJN",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "muffinpie2018@gmail.com",
+        "subject": "=🚨 {{$json.business_priority}} Priority Alert - {{$json.shipment_id}}",
+        "message": "=<h2>🚨 AI Supply Chain & Hazard Alert</h2>\n\n<hr>\n\n<b>Shipment ID</b><br>\n{{$json.shipment_id}}\n\n<br><br>\n\n<b>Facility</b><br>\n{{$json.facility_id}}\n\n<br><br>\n\n<b>Event Category</b><br>\n{{$json.event_category}}\n\n<br><br>\n\n<b>Hazard Type</b><br>\n{{$json.hazard_type}}\n\n<br><br>\n\n<b>Shipment Status</b><br>\n{{$json.shipment_status}}\n\n<br><br>\n\n<b>Severity Level</b><br>\n{{$json.severity_level}}\n\n<br><br>\n\n<b>Business Priority</b><br>\n{{$json.business_priority}}\n\n<br><br>\n\n<b>Combined Score</b><br>\n{{$json.combined_score}} / 100\n\n<br><br>\n\n<b>Assigned Team</b><br>\n{{$json.assigned_team}}\n\n<hr>\n\n<h3>📋 Incident Summary</h3>\n\n<div style=\"font-family:Arial;font-size:14px;line-height:1.6;\">\n{{$json.incident_summary}}\n</div>\n\n<hr>\n\n<h3>✅ Recommended Actions</h3>\n\n<div style=\"font-family:Arial;font-size:14px;line-height:1.6;white-space:pre-wrap;\">\n{{$json.recommendation}}\n</div>\n\n<hr>\n\n<b>Generated By</b><br>\nAI Supply Chain & Hazard Monitoring System\n\n<br><br>\n\n<i>This email was generated automatically using n8n.</i>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        -112
+      ],
+      "id": "e86ab8a6-6b31-4dec-bb65-3169daa37cf5",
+      "name": "Critical Incident Notification",
+      "webhookId": "5f111c8d-a3d8-42ce-b9d5-5083d29951b1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YaCO3kp7esYIQicy",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        688,
+        64
+      ],
+      "id": "7eea1825-ab91-449d-a97e-961193479656",
+      "name": "Operational Data Consolidator"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://summit-ops-ai.lovable.app",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        944,
+        64
+      ],
+      "id": "8504d880-b38d-4f38-9471-1de5ef9e1b01",
+      "name": "Dashboard Data Publisher"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Nexus Ops Worflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Incident Data Repository",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Shipment Data Repository",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Incident Data Normalizer": {
+      "main": [
+        [
+          {
+            "node": "Unified Operations Data Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Incident Data Repository": {
+      "main": [
+        [
+          {
+            "node": "Incident Data Normalizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shipment Data Repository": {
+      "main": [
+        [
+          {
+            "node": "Shipment Data Normalizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shipment Data Normalizer": {
+      "main": [
+        [
+          {
+            "node": "Unified Operations Data Engine",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Unified Operations Data Engine": {
+      "main": [
+        [
+          {
+            "node": " Dashboard Data Optimizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    " Dashboard Data Optimizer": {
+      "main": [
+        [
+          {
+            "node": "Nexus AI Risk Intelligence Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nexus AI Risk Intelligence Engine": {
+      "main": [
+        [
+          {
+            "node": "Dashboard Metrics Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    " LLM Processing Engine (Groq)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Nexus AI Risk Intelligence Engine",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dashboard Metrics Generator": {
+      "main": [
+        [
+          {
+            "node": "⚠️ Risk Assessment & Escalation Gateway",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚠️ Risk Assessment & Escalation Gateway": {
+      "main": [
+        [
+          {
+            "node": "Critical Incident Logger",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Standard Incident Logger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Critical Incident Logger": {
+      "main": [
+        [
+          {
+            "node": "Critical Incident Notification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Operational Data Consolidator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standard Incident Logger": {
+      "main": [
+        [
+          {
+            "node": "Operational Data Consolidator",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Operational Data Consolidator": {
+      "main": [
+        [
+          {
+            "node": "Dashboard Data Publisher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "cccb3bf5-f243-4c20-bee6-58a0b689834b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "556130e19853c6c11480080160e618e9b143c092768944f09f0f332e877038a6"
+  },
+  "nodeGroups": [],
+  "id": "ijkEUN7JuhkxIWDw",
+  "tags": []
+}
