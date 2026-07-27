@@ -2,19 +2,41 @@
 
 ## 📌 Project Overview
 
-This project automates supply chain anomaly detection and hazard event logging using AI-powered workflows. It helps identify shipment issues, classify hazard events, generate recommendations, and present insights through an interactive Power BI snd lovable dashboard.
+This project demonstrates an AI-powered supply chain monitoring solution that automates anomaly detection, hazard event logging, and operational reporting. Built using n8n, Groq AI, Google Sheets, Lovable, and Power BI, the solution reduces manual effort and provides actionable insights through an interactive dashboard.
 
 ---
 
 ## 🎯 Business Problem
 
-Supply chain teams often spend significant time manually reviewing shipment records and identifying operational issues. This project demonstrates how AI and workflow automation can streamline anomaly detection and improve operational visibility.
+Supply chain operations often rely on manual monitoring of shipment data, making it difficult to quickly identify delays, risks, and hazard events. This can lead to slower decision-making and reduced operational efficiency.
 
 ---
 
 ## 💡 Solution
 
-An automated workflow built using n8n integrates shipment data, applies AI-powered analysis, logs hazard events, and visualises the results in Power BI.
+An end-to-end automated workflow was developed using n8n to process shipment data, identify anomalies using AI, classify hazard events, generate recommendations, store results in Google Sheets, and visualise insights through Power BI and lovable.
+
+---
+
+## 🏗️ Solution Architecture
+
+```
+Shipment Data
+      │
+      ▼
+Google Sheets
+      │
+      ▼
+n8n Workflow
+      │
+      ├── AI Anomaly Detection (Groq AI)
+      ├── Hazard Event Classification
+      ├── AI Recommendations
+      ▼
+Google Sheets (Processed Data)
+      │
+      ▼
+Power BI Dashboard/Lovable Dashboard
 
 ---
 
@@ -24,62 +46,102 @@ An automated workflow built using n8n integrates shipment data, applies AI-power
 - Groq AI
 - Google Sheets
 - Power BI
-- AI Prompt Engineering
 - Lovable
+- Prompt Engineering
 
 ---
 
 ## 🔄 Workflow
 
-The workflow performs the following steps:
+The automated workflow performs the following tasks:
 
-1. Reads shipment data
-2. Detects anomalies
-3. Classifies hazard events
-4. Generates AI recommendations
-5. Stores results in Google Sheets
-6. Updates the Power BI dashboard
+1. Reads shipment records.
+2. Detects shipment anomalies using AI.
+3. Classifies hazard events.
+4. Generates AI-powered recommendations.
+5. Stores processed results in Google Sheets.
+6. Updates the Power BI dashboard.
 
 ---
 
-## 📊 Dashboard
+## 📊 Dashboard Features
 
-The Power BI dashboard provides:
+The dashboard provides:
 
 - Shipment Status Overview
-- Risk Categories
-- Hazard Event Summary
-- AI Recommendations
-- Operational KPIs
+- KPI Summary
+- Risk Category Analysis
+- Hazard Event Tracking
+- AI-generated Recommendations
+- Operational Insights
 
 ---
 
 ## ✨ Key Features
 
-- Automated anomaly detection
-- AI-generated recommendations
-- Hazard event logging
-- Workflow automation
+- AI-powered anomaly detection
+- Automated hazard event logging
+- End-to-end workflow automation
 - Interactive Power BI dashboard
-- End-to-end data pipeline
+- Centralised reporting
+- AI-generated operational recommendations
 
 ---
+
+## 📈 Business Value
+
+- Reduced manual effort through workflow automation.
+- Faster identification of shipment anomalies.
+- Improved visibility of operational risks.
+- Centralised monitoring using interactive dashboards.
+- Better decision-making with AI-generated insights.
+
+---
+
+## 🛠 Skills Demonstrated
+
+- Workflow Automation
+- Data Analytics
+- Power BI Dashboard Development
+- AI Integration
+- Prompt Engineering
+- Supply Chain Analytics
+- Business Process Automation
+
+---
+
+## 📷 Project Screenshots
+
+### Dashboard Overview
+
+<img width="960" height="540" alt="Dashboard_Overview" src="https://github.com/user-attachments/assets/1ecf5dfe-a359-41c8-b44e-4577a55f26b3" />
+
+### KPI Dashboard
+
+<img width="960" height="540" alt="Dashboard_KPI" src="https://github.com/user-attachments/assets/8e591fcc-3b4c-4849-b4b1-632f7afc0cbb" />
+
+### n8n Workflow
+
+<img width="704" height="327" alt="image" src="https://github.com/user-attachments/assets/0c9c6e70-6138-453b-a8ea-556aee0181ea" />
+
+---
+
 ## 📂 Repository Contents
 
-- Presentation
-- Dashboard Screenshots
-- n8n Workflow Screenshots
-- Project Documentation
+- 📊 Dashboard Screenshots
+- 🔄 n8n Workflow
+- 📽 Project Presentation
+- 📄 Project Documentation
 
 ---
 
 ## 🚀 Future Enhancements
 
-- Real-time data integration
-- Email alerts for critical events
-- Predictive analytics
+- Real-time API integration
+- Automated email alerts
+- Predictive analytics using Machine Learning
 - Cloud deployment
-- Advanced dashboard insights
+- Role-based dashboard access
 
 ---
 
@@ -87,4 +149,8 @@ The Power BI dashboard provides:
 
 **Tanuja N Rao**
 
-Aspiring Data Analyst | AI & Workflow Automation Enthusiast | Power BI | n8n
+Aspiring Data Analyst | AI & Workflow Automation Enthusiast | Power BI | n8n | Supply Chain Analytics
+
+---
+
+⭐ *If you found this project interesting, feel free to star the repository.*
